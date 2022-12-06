@@ -9,6 +9,16 @@ class Kmeans:
         self.K = K
         # Initialize centroids - choose K random non-repeating elements from X
         unique_list = list(np.unique(self.X, axis = 0))
+        # Prune numerically similar elelemnts
+        pop_set = set()
+        for idx, elt in enumerate(unique_list):
+            for i in range(idx + 1, len(unique_list)):
+                if np.linalg.norm(np.asarray(unique_list[idx]) - np.asarray(unique_list[i])) < 1e-5:
+                    pop_set.add(i)
+        pop_list = list(pop_set)
+        pop_list.reverse()
+        for j in pop_list:
+            del unique_list[j]
         random_sample = random.sample(unique_list, self.K)
         self.centroids = np.array(random_sample)
 
@@ -38,9 +48,12 @@ class Kmeans:
     def run(self, max_iter):
         # Performs the K-means algorithm on X
         # If the points do not converge, the algorithm will terminate after max_iter number of iterations.
+        print("CHECK")
         for i in range(max_iter):
+            print(self.centroids)
             centroid_indices = self.closest_centroids() # calculate closest centroids
             # Computes the centroids based on the current cluster
+            print(centroid_indices)
             avgs = np.array([np.mean(self.X[centroid_indices == it], 
                 axis=0) 
                 for it in range(self.K)])
@@ -51,5 +64,5 @@ class Kmeans:
             else:
                 # Otherwise, update the current centroids to the new averages
                 self.centroids = avgs
-        
+        print("EXIT", max_iter)
         return (self.centroids, centroid_indices)

@@ -1,7 +1,5 @@
 import numpy as np
 from functools import reduce
-import networkx as nx
-import matplotlib.pyplot as plt
 
 # Data structure of a simple graph
 class Graph:
@@ -49,29 +47,3 @@ class Graph:
     # Checks if the graph is undirected
     def is_undirected(self):
         return np.all(np.abs(self.A - np.transpose(self.A)) < 1e-9)
-
-# Visualizes a given undirected graph 
-def visualize_undirected_graph(g, index=None):
-    G = nx.from_numpy_matrix(g.A, create_using=nx.Graph)
-    
-    if type(index) != type(None):
-        color_dict = [index[i] for i in range(0, g.size)]
-    else:
-        color_dict = ["tab:red" for i in range(0, g.size)]
-    
-    pos = nx.spring_layout(G)
-    # Drawing the graph
-    nx.draw_networkx_nodes(G, pos, node_color=color_dict, node_size=700)
-    nx.draw_networkx_edges(G, pos, width=6)
-
-    # Drawing the Labels
-    nx.draw_networkx_labels(G, pos, font_size=20, font_family="sans-serif")
-    edge_labels = nx.get_edge_attributes(G, "weight")
-    nx.draw_networkx_edge_labels(G, pos, edge_labels)
-
-    # Displaying the graph
-    ax = plt.gca()
-    ax.margins(0.08)
-    plt.axis("off")
-    plt.tight_layout()
-    plt.show()
