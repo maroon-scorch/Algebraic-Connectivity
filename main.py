@@ -3,7 +3,6 @@ import numpy as np
 from graph import *
 from kmeans import *
 from util import *
-from sklearn.cluster import KMeans
 
 data_flag = ["s", "e"]
 graph_flag = "g"
@@ -87,20 +86,15 @@ def power_iteration_clustering(g, K):
 def spectral_clustering(g, K):
     print(g.D)
     print(g.A)
+    print(g.L)
     eigenvalues, eigenvectors = np.linalg.eigh(g.L)
     eigenvectors = eigenvectors[:, np.argsort(eigenvalues)]
-
+    print(eigenvalues)
     input = eigenvectors[:,0:K]
     print(input)
     program = Kmeans(input, K)
     centroids, index = program.run(50)
     print(index)
-    
-    kmeans = KMeans(n_clusters=K)
-    kmeans.fit(input)
-    colors = kmeans.labels_
-    print(colors)
-    
     return index
 
 def sym(x, y, sigma):
