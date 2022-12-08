@@ -1,11 +1,11 @@
-
 from graph import *
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Visualizes a given undirected graph 
+# Common utility functions
 def visualize_undirected_graph(g, index=None):
+    """ Visualizes a given undirected graph """
     G = nx.from_numpy_matrix(g.A, create_using=nx.Graph)
     
     if type(index) != type(None):
@@ -30,8 +30,8 @@ def visualize_undirected_graph(g, index=None):
     plt.tight_layout()
     plt.show()
 
-# Visualizes 2d data
 def visualize_data(p, index=None, title=""):
+    """ Visualizes 2d data """
     x, y = zip(*p)
     if type(index) == type(None):
         plt.scatter(x, y, color="red", alpha=0.5)
@@ -45,5 +45,6 @@ def l1_norm(vector):
     return np.sum(np.absolute(vector))
 
 def enough_cluster(vec, K):
+    """ Checks if the K-means operation can be used """
     input = vec.tolist()
     return len(set(input)) >= K

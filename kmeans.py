@@ -11,7 +11,7 @@ class Kmeans:
         unique_list = list(np.unique(self.X, axis = 0))
         # Prune numerically similar elelemnts
         pop_set = set()
-        for idx, elt in enumerate(unique_list):
+        for idx, _ in enumerate(unique_list):
             for i in range(idx + 1, len(unique_list)):
                 if np.linalg.norm(np.asarray(unique_list[idx]) - np.asarray(unique_list[i])) < 1e-5:
                     pop_set.add(i)
