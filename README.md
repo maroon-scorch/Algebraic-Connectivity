@@ -1,6 +1,6 @@
 # Algebraic-Connectivity
 
-This is an implementation of the Spectral Clustering algorithm in Python using the concept of Algebraic Connectivity. For an introduction to these two topics, please check out our presentation [here](presentation/presentation.pdf).<br />
+This is an implementation of the Spectral Clustering algorithm in Python using the concept of Algebraic Connectivity. For an introduction to these two topics, please check out our presentation [here](presentation/presentation.pdf) and our summary [here](summary/summary.pdf). <br />
 
 The algorithm works as follows:
 ![alt text](algorithm.png)

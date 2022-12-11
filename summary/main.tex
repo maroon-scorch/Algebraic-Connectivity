@@ -1,0 +1,340 @@
+\documentclass{article}
+\input{setup.tex}
+
+\renewcommand*\contentsname{Table of Content}
+\usepackage{algorithm2e}
+\title{Algebraic Connectivity}
+\author{Mattie Ji}
+\date{December 8th, 2022}
+\setlength\parindent{0pt}
+\begin{document}
+
+\maketitle
+
+
+
+\section*{Introduction:}
+Let $G$ be an un-directed finite simple unweighted graph, we define the graph Laplacian matrix $L(G)$ of $G$ as the difference between the degree matrix $D(G)$ and the adjancency matrix $A(G)$ of $G$. If $G$ has more than $1$ vertex, than we define the \textit{algebraic connectivity} $a(G)$ (also known as ``Fiedler value") of $G$ as the second smallest eigenvalue of $L(G)$, including multiplicity.\\
+
+The interests in $a(G)$ were first popularized by Fielder in \cite{Fiedler1973} and \cite{MiroslavFiedler1989}, which we will summarize in this report. Since the majority of the first paper was also presented in the second paper, we will mainly focus the second paper, and add in what's excluded from the first paper in relevant sections.
+\begin{itemize}
+    \item In Section $1$ and $2$, we will first introduce some preliminary results on the graph Laplacian $L(G)$ and other notions of connectivity (namely edge and vertex connectively) respectively. Note that our discussion here is only limited to unweighted graphs.
+    \item In Section $3$, we will introduce the concept of algebraic connectivity $a(G)$ and compare it against both edge and vertex connectivity.
+    \item In Section $4$, we will discuss an interesting application of $a(G)$ in clustering problems.
+    \item In Section $5$, we will generalize our discussion to weighted graphs.
+    \item In Section $6$, we will discuss some open problems regarding the multiplcity of $a(G)$.
+    \item Finally, in Section $7$, we will discuss some further questions and next steps about algebraic connectivity.
+\end{itemize}
+For Section $1$ to $4$ below, a ``graph" always means - a simple undirected un-weighted graph. For Section $5$ and onward, we will consider the graphs to be weighted.
+
+\tableofcontents
+
+\newpage
+
+\section{Properties of Graph Laplacian}
+
+The papers (Section $1$) first discussed on some preliminary properties of the Graph Laplacian, which we will help to fill in more details here.
+
+\begin{definition}
+    The Laplacian of a graph $G$ is the real symmetric matrix $L(G)$ given as
+    \[L(G) = D(G) - A(G)\]
+    where $D(G), A(G)$ are the degree matrix and the adjacency matrix of $G$ respectively.
+\end{definition}
+
+Here are some well-known properties of $L(G)$:
+
+\begin{proposition}\label{thm::laplacian}
+    Let $G = (V, E)$ be a graph with $n$ vertices, then
+    \begin{enumerate}
+        \item $L(G)$ is a real positive semi-definite symmetric matrix. Specfcially, for all $x \in \Rbb^n$,
+        \[x^T L(G) x = \frac{1}{2} \sum_{j=1}^n \sum_{i=1}^n A(G)_{ij} (x_i - x_j)^2\]
+        where $x_i$ represents the $i$-th component of the vector $x$, and $A(G)_{ij}$ represents the $(i, j)$-entry of $A(G)$.\\
+
+        This quadratic form also determines the original matrix $L(G)$ (since your field has characteristic $\neq 2$), so you can use this as the definition of a graph Laplacian too. In fact, this is how the second paper \cite{MiroslavFiedler1989} defined it.
+        \item Since $L(G)$ is a real positive semi-definite symmetric matrix, it is a well-known Linear Algebra fact that all eigenvalues of $L(G)$ are non-negative and real-valued.\\
+        
+        In particular, let $x = (1, ..., 1) \in \Rbb^n$ be the constant $1$ vector, then $x$ is an eigenvector of $L(G)$ with eigenvalue $0$. This is because each row of $L(G)$ contains the degree of that vertex and number of $-1$ entries equal to that degree. In other words, the sum of row entries equal to $0$ (We call a matrix with this property \textbf{singular}). Thus, the \textbf{smallest eigenvalue} of $L(G)$ is $0$.
+        \item The multiplicity of $0$ in the eigenvalues of $L(G)$ is the same as the number of connected components of $G$.
+        \item Let $\overline{G}$ be the graph complement of $G$ defined as follows:
+        \begin{itemize}
+            \item $V(\overline{G}) = V$, so the two graphs share the same vertex set.
+            \item For all vertices $v_i \neq v_j \in V(\overline{G})$, there's an edge from $v_i$ to $v_j$ in $\overline{G}$ if and only if $v_i \to v_j$ is not an edge in $G$.
+        \end{itemize}
+        Then, we have that
+        \[L(G) + L(\overline{G}) = L(K_n) = nI - J\]
+        where $I$ denotes the $n \times n$ identity matrix and $J$ denotes the $n \times n$ matrix whose entries are all $1$'s.
+    \end{enumerate}
+\end{proposition}
+
+\section{Edge Connectivity and Vertex Connectivity}
+
+Besides the concept of algebraic connectivity, there are two other well-known notions of connectivity - edge connectivity and vertex connectivity - as follows:
+
+\begin{definition}
+    Let $G = (V, E)$ be a finite undirected simple graph:
+    \begin{itemize}
+        \item The \textit{edge connectivity} $e(G)$ of $G$ is
+    \[e(G) \coloneqq \min \{|E_1|\ |\ E_1 \subseteq E \text{ and the graph $(V, E \setminus E_1)$ is not connected}\}\]
+    In other words, $e(G)$ is the minimum number of edges you can remove from $G$ before it becomes disconnected.
+    \item The \textit{vertex connectivity} $v(G)$ of $G$ is
+    \[v(G) \coloneqq \min \{|V_1|\ |\ V_1 \subseteq V \text{ and the subgraph generated by $G$ on $V\setminus V_1$ is not connected}\}\]
+    In other words, $v(G)$ is the minimum number of vertices you can remove (including incident edges) from $G$ before it becomes disconnected.
+    \end{itemize}
+\end{definition}
+
+The paper mostly focused its discussion on edge connectivity. Throughout the remainder of this report, we will also be mainly comparing the contrasting the notions of $e(G)$ and $a(G)$.\\
+
+Besides its graphical interpretation, there are many properties of $e(G)$ that justifies why it serves as a useful notion of metric for connectedness of $G$:
+
+\begin{theorem}\label{thm::e_facts}
+        \begin{enumerate}
+        \item $e(G) \geq 0$, and $e(G) = 0$ if and only if $G$ is not connected.
+        \item Let $G_1 = (V, E_1), G_2 = (V, E_2)$ and $E_1 \subset E_2$, then $e(G_1) \leq e(G_2)$
+        \item Let $G_1 = (V_1, E_1), G_2 = (V, E_2)$, $E_1 \cap E_2 = \emptyset$, and define $G_3 = (V, E_1 \cup E_2)$, then $e(G_1) + e(G_2) \leq e(G_3)$
+        \item Let $G_1$ be the graph obtained by removing $k$ vertices (including incident edges) from the graph $G$, then $v(G_1) \geq v(G) - k$
+    \end{enumerate}
+\end{theorem}
+
+
+\section{Algebraic Connectivity}
+
+\begin{definition}
+    Let $G$ be a graph, then the algebraic connectivity of $G$ is the second smallest eigenvalue $a(G)$ of $L(G)$, including multiplicity.
+\end{definition}
+
+% \begin{theorem}
+%     Let $n$ be the number of vertices in $G$. Define e algebraic connectivity $a(G)$ of $G$ satisfies the following equality:
+%     \[a(G) = \min_{x \in S} x^T L(G) x\]
+% \end{theorem}
+
+How is $a(G)$ a metric of connectivity? The intuition here is that - while the definition of $a(G)$ is fairly abstract, it does possess many geometric properties similar to that of $e(G)$ and $v(G)$ before.
+
+\begin{proposition}\label{prop::alg_comp}
+    $a(G) \geq 0$, and $a(G) = 0$ if and only if $G$ is not connected.
+\end{proposition}
+
+\begin{proof}
+    The non-negativity of $a(G)$ follows from Theorem~\ref{thm::laplacian}(2). For connectedness, recall in Theorem~\ref{thm::laplacian}(3) that the multiplicity of $0$ in $L(G)$ is equal to the number of connected components of $G$. Since $a(G)$ is the second smallest eigenvalue of $L(G)$, $a(G) = 0$ if and only if $G$ has more than $1$ connected component.
+\end{proof}
+
+\begin{theorem}\label{thm::a_facts}
+    \begin{enumerate}
+        \item Let $G_1 = (V, E_1), G_2 = (V, E_2)$ and $E_1 \subset E_2$, then $a(G_1) \leq a(G_2)$
+        \item Let $G_1 = (V_1, E_1), G_2 = (V, E_2)$, $E_1 \cap E_2 = \emptyset$, and define $G_3 = (V, E_1 \cup E_2)$, then $a(G_1) + a(G_2) \leq a(G_3)$
+        \item Let $G_1$ be the graph obtained by removing $k$ vertices (including incident edges) from the graph $G$, then $a(G_1) \geq a(G) - k$
+    \end{enumerate}
+\end{theorem}
+
+\begin{remark}
+    Note that Proposition~\ref{prop::alg_comp} and Theorem~\ref{thm::a_facts} combined shows that $a(G)$ satisfies the same notion of graphical properties that $e(G)$ and $v(G)$ have in Theorem~\ref{thm::e_facts}. In fact, $a(G)$ contains the properties of $e(G)$ and $v(G)$ combined and is in some sense a more complete/ideal metric for connectedness.
+\end{remark}
+
+We will now calculate $a(G)$ on some common graphs we have encountered in the past.
+
+\begin{theorem}
+Unless specified otherwise, the subscript $n$ denote the number of vertices in the graph
+\begin{itemize}
+    \item $P_n$ be a path
+    \item $C_n$ be a circuit
+    \item $S_n$ be a star
+    \item $R_n$ be an $m$-dimensional cube ($n = 2^m$)
+    \item $L_n$ be a ladder ($n$ is even)
+    \item $W_n$ be a wheel
+    \item $K_n$ be the complete graph
+    \item $K_{p, q},\ pq \geq 2$ be the complete bipartite graph between vertex group of $p$ and $q$ vertices respectively
+    \item $\hat{K_{n, p}}$ be the graph obtained by removing all edges between vertices of a subset with $p$ vertices from the vertex set of $K_n$
+    \item $K_{n, p, q},\ p + q < n$ be the graph obtained by removing all $pq$ edges between fixed disjoint subsets $S_1, S_2$ of the vertex set of $K_n$ with $p, q$ vertices, respectively.  
+    \item $G_1 \times G_2$ be the cartesian product of graphs.
+    \item $\overline{G}$ be the complement graph of some graph $G$
+\end{itemize}
+    Then, we have the following non-exhaustive list of graphs and its algebraic connectivity:
+    \begin{center}
+\begin{tabular}{||c|| c||} 
+ \hline
+ Graph & Algebraic Connectivity \\ [0.5ex] 
+ \hline\hline
+  $P_n$ & $2(1 - \cos(\pi/n))$ \\ 
+ $C_n$ & $2(1 - \cos(2\pi/n))$ \\ 
+ $S_n$ & $1$ \\
+ $R_n$ & $2$ \\
+ $L_n$ & $2(1 - \cos(\frac{2\pi}{n})$\\
+ $W_n$ & $1 + 2(1 - \cos(\frac{2\pi}{n-1}))$\\
+ $K_n$ & $n$ \\
+ $K_{p, q},\ pq \geq 2$ & $\min(p, q)$ \\
+ $\hat{K_{n, p}}$ & $n - p$\\
+ $K_{n, p, q}$ & $n - p - q$\\
+$G_1 \times G_2$ & $\min(a(G_1), a(G_2))$\\
+  $\overline{G}$ & $n - \max\{\lambda\ |\ \text{$\lambda$ is an eigenvalue of $L(G)$}\}$\\ [1ex] 
+ \hline
+\end{tabular}
+\end{center}
+\end{theorem}
+
+Another natural question that arises is - given a graph $G$, what are the relationships between $a(G), v(G), $ and $e(G)$. There's actually a whole slew of results would make any analyst really happy:
+
+\begin{theorem}[Bounds on Connectivity]\label{thm::inequal}
+    Let $G$ be a graph, then the following inequalities are true:
+    \begin{enumerate}
+        \item If $G$ is a non-completed graph, then
+        \[a(G) \leq v(G) \leq e(G)\]
+        \item If $G = K_n$, then
+        \[e(G) = v(G) = n - 1 < n = a(G)\]
+        \item For any graph $G$ of $n$ vertices, let $q(G)$ be the maximum vertex degree of $G$. Define
+        \[C_1 \coloneqq 2[\cos(\pi/n) - \cos(2\pi/n)],\ C_2 \coloneqq 2\cos(\pi/n)(1 - \cos(\pi/n))\]
+        Then, we have the following bounds
+        \[a(G) \geq 2(1 - cos(\frac{\pi}{n}))e(G)\]
+        \[a(G) \geq C_1 e(G) - C_2 q(G)\]
+        Furthermore,
+        \begin{itemize}
+            \item The constant $k_n = 2(1 - \cos(\pi/n))$ is the best possible constant satisfying $a(G) \geq k_n e(G)$.
+            \item The only connected graph where the first inequality becomes an equality in $P_n$.
+            \item The second bound is better if and only if $2 e(G) > q(G)$.
+        \end{itemize}  
+    \end{enumerate}
+\end{theorem}
+
+\section{Application: Decomposition of Vertices}
+
+Given a graph $G = (V, E)$, one can ask - does there exists a decomposition of $V$ into $V_1 \sqcup V_2$ such that the induced subgraph on $V_1$ and $V_2$ are both connected? This question is a classic example of a binary clustering problem.\\
+
+A method to cluster them using edge connectivity does exist. However, a far more well-known application of algebraic connectivity is its ability to provide this cluster. We call this clustering method \textit{Spectral Clustering}.\\
+
+The algorithm works as follows:
+
+\begin{algorithm}
+\caption{Spectral Clustering}\label{alg:two}
+\KwData{The graph $G$ with vertex number $1, 2, ..., n$}
+\KwResult{Clusters $C_1, C_2$ partitioning vertices of the graph}
+1. Compute the graph Laplacian $L$ of $G$ with ordering of vertices as $1, 2, ..., n$\;
+2. Find an eigenvector $v$ of $a(G)$\;
+3. Let $v_i$ be the $i$-th component of $v$, then the clusters are $C_1 = \{i: v_i \geq 0\}$ and $C_2 = C_1^c$
+\end{algorithm}
+
+It was then stated in the paper that:
+
+\begin{theorem}
+    If $G$ is a connected graph, then the sub-graph generated by $C_1$ and $C_2$ with respect to $G$ are both connected.
+\end{theorem}
+
+What distinguishes the clustering method given by $a(G)$ from $e(G)$ is that the former actually approximates an optimization problem that seeks to minimize what's called the ``cut-ratio" between the two clusters of this graph. However, this wasn't mentioned in the original paper because this said connection hadn't been discovered yet.
+
+\section{Generalization to Weighted Graphs}
+
+Now we will start extending our previous discussion about $a(G)$ and $e(G)$ to weighted graphs:
+
+\begin{definition}
+    Let $G_C = (V, E, C)$ be a weighted graph on $n$ vertices, where $C$ is an $n \times n$ matrix where $C_{ij}$ records the weight of an edge from vertex $i$ to vertex $j$, then  
+    \begin{itemize}
+        \item We define the \textit{algebraic connectivity} $a(G_C)$ of $G_C$ as the second smallest eigenvalue of the graph Laplacian $L(G_C)$ of $G_C$, including multiplicity.
+        \item We define the \textit{edge connectivity} $e(G_C)$ as
+        \[e(G_C) \coloneqq \min_{\emptyset \neq M \subsetneq \{1, ...,n\}} \sum_{i \in M, k \notin M} C_{ik}\]
+    \end{itemize}
+\end{definition}
+
+Does $a(G)$ still remain as a metric for connectedness for weighted graphs?\\
+
+Yes! It turns out there are canonical generalizations of Proposition~\ref{prop::alg_comp} and Theorem~\ref{thm::a_facts} for weighted graphs:
+
+\begin{theorem}
+    Let $G_C = (V, E, C)$, then
+    \begin{itemize}
+        \item $a(G_C) \geq 0$, and $a(G_C) = 0$ if and only if $G_C$ is not connected.
+        \item Let $G_D = (V, E, D)$ and $C \leq D$ element wise, then $a(G_C) \leq a(G_D)$.
+        \item Let $G_D = (V, E, D)$, then for $G_H = (V, E, C + D)$, $a(G_C) + a(G_D) \leq a(G_H)$.
+        \item If $\Tilde{G}$ is obtained from $G$ as the subgraph generated by $G$ on a fixed vertex set $V_1 \subseteq V$ with the same weights, then
+        \[a(\Tilde{G}_C) \geq a(G_C) - \max_{i \in V_1} \sum_{k \in V \setminus V_1} c_{ik}\]
+    \end{itemize}
+\end{theorem}
+
+In addition to connectedness, we also kept some our favorite inequalities in Theorem~\ref{thm::inequal}:
+
+\begin{theorem}
+    Let $G_C = (V, E, C)$, then
+    \[2(1 - \cos(\frac{\pi}{n})) e(G_C) \leq a(G_C) \leq \frac{n}{n-1}e(G_C)\]
+    The constants on both sides are the best possible constraints.
+\end{theorem}
+
+There's also a canonical way to define what are so called ``absolute edge connectivity" and ``absolute algebraic connectivity":
+
+\begin{definition}
+    Let $\mathscr{C}(G)$ be defined as the set of all non-negative weight matrix $W$ on $G$ whose sum of all entries is exactly $|E|$, the cardinality of edge set of $G$. Then we define the \textit{absolute edge connectivity} $\hat{e(G)}$ and the \textit{absolute algebraic connectivity} $\hat{a(G)}$, then
+    \[\hat{e(G)} \coloneqq \max_{C \in \mathscr{C}(G)} e(G_C)\]
+    \[\hat{a(G)} \coloneqq \max_{C \in \mathscr{C}(G)} a(G_C)\]
+\end{definition}
+
+\begin{remark}
+    Note by construction of maximality, we have that $\hat{e(G)} \geq e(G)$ and $\hat{a(G)} \geq a(G)$. Remarkably, has been shown that $\hat{a(G)}$ is always rational.
+\end{remark}
+
+There are many interesting discussions that can be had around these absolute connectivities, but we will mainly focus our attention on their connections to automorphisms on $G$.
+
+\begin{definition}
+    Let $G$ be a graph and let $e_1, e_2$ be two edges of $G$. We say $e_1$ and $e_2$ are \textit{equivalent} if there exists some automorphism on $G$ that sends $e_1$ to $e_2$.
+\end{definition}
+
+\begin{theorem}
+    Let $G$ be a graph where any pair of two edges are equivalent, then
+    \[\hat{a(G)} = a(G),\ \hat{e(G)} = e(G)\]
+\end{theorem}
+
+\section{Open Problems on Multiplicites of $a(G)$}
+
+We will conclude this section on a discussion of a new class of invariants proposed by Y. Colin de Verdière in \cite{de_verdière_1990}:
+
+\begin{definition}[Quasi-Definition]
+Let $C \in \mathscr{C}$ be a weight matrix on $G$ such that, in the paper's own words ``one can vary the valuation $C$ corresponding to the maximum multiplicity in such a way that this multiplicity remains the same), then we define $\mu(G)$ as the maximum multiplictiy of $a(G)$ under this variation.
+\end{definition}
+
+\begin{theorem}
+In the same paper, Colin de Verdière proved the following results:
+\begin{itemize}
+    \item $\mu(G) \leq 3$ if and only if $G$ is a planar graph.
+    \item $\mu(G) \leq 2$ if and only if $G$ is an outerplanar graph.
+    \item If $G$ is linear, then $\mu(G) = 1$
+\end{itemize}
+Fielder proved in \cite{fiedler_1969} that if $\mu(G) = 1$, then $G$ is also linear.
+\end{theorem}
+
+Finally, Colin de Verdière also conjectured in \cite{de_verdière_1990} that:
+
+\begin{conjecture}
+    Let $\chi(G)$ be the chromatic number of $G$, then
+    \[\mu(G) \geq \chi(G) - 1\]
+    This conjecture, if proven to be true, would imply the four-colour theorem.
+\end{conjecture}
+
+\newpage
+\section{Further Questions}
+
+Given that $a(G)$ is the \textbf{second} smallest eigenvalue of $L(G)$, a very natural question would be to examine the \textbf{k-th} smallest eigenvalue $\lambda_k(G)$ of $L(G)$.\\
+
+There's certainly still a metric of connectivity here. Applying Theorem~\ref{thm::laplacian}(3) would tell us that $\lambda_k(G) = 0$ if and only if $G$ has at least $k$ connected components.\\
+
+While we didn't prove Theorem~\ref{thm::a_facts}(1) in this report, a similar argument using Courant's Theorem, as in the original paper \cite{MiroslavFiedler1989}, would show that:
+
+\begin{theorem}
+    For any graphs $G_1 = (V, E_1), G_2 = (V, E_2)$ such that $E_1 \subset E_2$, then $\lambda_k(G_1) \leq \lambda_k(G_2)$. Therefore, adding edges to a graph $G$ can only increase the value of $\lambda_k(G)$.
+\end{theorem}
+
+Therefore, $\lambda_k(G)$ does serve as a valid metric for connectivity too. The question now is - what are the similarities and differences between $a(G)$ and $\lambda_k(G)$? Are many properties of $a(G)$ only special cases when $k = 2$?\\
+
+In fact, there are many noteworthy applications of the first $k$ eigenvalues of $L(G)$, especially in statistical analysis methods such that Spectral Clustering. For more details on how they apply in this subject, please check out our code repository \href{https://github.com/maroon-scorch/Algebraic-Connectivity}{here}.\\
+
+Another possibility would to be to consider the algebraic connectivity of \textbf{directed graphs}. Now, we immediately run into a few problems with this extension:
+\begin{itemize}
+    \item The graph Laplacian $L(G)$ of directed graphs need not be symmetric, so $L(G)$ need not be diagonalizable.
+    \item Even if $L(G)$ is diagonalizable, it may contain complex eigenvalues, and thus there's no sense of order in $L(G)$ to find its respective algebraic connectivity.
+\end{itemize}
+We could however try to remedy this with attempts to symmetrize the given graph Laplacian, and to perform our analysis on the symmetrized graph Laplacian. A fairly straight forward approach would be to instead consider the matrix
+\[M = L(G) + L(G)^T\]
+, which would produce positive semi-definite symmetric matrices. However, we do note that this operation here do ignore the directness of the original graph to an extent.\\
+
+There are certainly better ways to symmetrize this. In fact, borrowing ideas from Rayleigh quotients, Chung proposed in \cite{chung_2005} an analogue of $L(G)$ for directed graphs that was indeed symmetric. This method has since been applied in many cases such as certain classes of non-reversible Markov chains.
+
+% bibliography style is set to SIAM here. you can experiment with other styles
+\bibliographystyle{alpha}
+
+% this line includes all references cited in the document. 
+\bibliography{references.bib}
+ 
+\end{document}
