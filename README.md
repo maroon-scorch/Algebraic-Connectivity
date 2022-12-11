@@ -3,7 +3,7 @@
 This is an implementation of the Spectral Clustering algorithm in Python using the concept of Algebraic Connectivity. For an introduction to these two topics, please check out our presentation [here](presentation/presentation.pdf) and our summary [here](summary/summary.pdf). <br />
 
 The algorithm works as follows:
-![alt text](algorithm.png)
+![alt text](image.png)
 
 This project was made as part of our final project of **APMA 2812G : Combinatorial Theory** for the Fall 2022 Semester.
 ## Input Specification
